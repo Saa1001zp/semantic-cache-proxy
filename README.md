@@ -1,84 +1,104 @@
-# semantic cache proxy
+<p align="center">
+  <h1 align="center">⚡ semantic cache proxy</h1>
+  <p align="center">tiny proxy that sits between your app and any LLM<br>turns requests into vectors, finds similar ones and returns cache in 15ms instead of 1.2s</p>
+  <p align="center">
+    <a href="https://github.com/Saa1001zp/semantic-cache-proxy/actions/workflows/test.yml"><img src="https://github.com/Saa1001zp/semantic-cache-proxy/actions/workflows/test.yml/badge.svg" alt="build"></a>
+    <img src="https://img.shields.io/badge/python-3.14-blue" alt="python">
+    <img src="https://img.shields.io/badge/FastAPI-0.141-green" alt="fastapi">
+    <img src="https://img.shields.io/badge/tests-17%20passed-brightgreen" alt="tests">
+    <img src="https://img.shields.io/badge/docker-ready-blue" alt="docker">
+    <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="license">
+  </p>
+</p>
 
-lightweight proxy between your code and any LLM. paying for every api call and waiting 1-2 sec each time is annoying, so i built this thing that turns your request into an embedding, looks for a similar one in the db by cosine distance and returns the cached answer in 15ms.
-
-built for my portfolio, spent a couple weeks in the evenings. feedback and PRs welcome.
-
-![Build](https://github.com/Saa1001zp/semantic-cache-proxy/actions/workflows/test.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.14-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.141-green)
-![Tests](https://img.shields.io/badge/tests-17%20passed-brightgreen)
-![Docker](https://img.shields.io/badge/docker-ready-blue)
-
----
-
-## why
-
-two pains with LLM in prod:
-
-1. money - every request costs tokens. "hello how are you" and "hi how are you doing?" cost the same even though the answer is the same
-2. latency - 1-2 sec for every request, even if you already asked it 100 times
-
-proxy fixes both: if `similarity > 0.93` - return cache in milliseconds and count how much money you saved.
+<p align="center">
+  <img src="docs/dashboard.png" alt="dashboard" width="900">
+  <br>
+  <em>dashboard at /dashboard - hit rate, latency, saved tokens and dollars, auto refresh every 2s</em>
+</p>
 
 ---
 
-## how it works
+### why i built this
+
+every LLM request costs money and takes 1-2 sec. but 90% of users ask the same things with different words.
+
+> `hello how are you` and `hi how are you doing?` cost the same, even though answer is identical.
+
+this proxy fixes it. if `similarity > 0.93` it returns cache in 15ms and counts how much you saved. built it in a couple evenings for my portfolio, code is simple on purpose.
+
+<p align="center">
+
+| 💸 save money | ⚡ cut latency | 🔌 drop-in |
+|---|---|---|
+| counts tokens and dollars you saved | 12ms vs 1200ms, x90 faster | openai compatible, just change `base_url` |
+
+</p>
+
+---
+
+### how it works
 
 ```
 Client -> POST /v1/chat/completions -> [ Proxy ]
                                             |
-                                 1. text -> embedding      all-MiniLM-L6-v2, about 15ms on cpu
+                                 1. text -> embedding      all-MiniLM-L6-v2, ~15ms on cpu
                                  2. cosine search          pgvector / memory
-                                 3. similarity > 0.93?  - yes -> return cache (15ms) + X-Cache: HIT
-                                                        - no  -> go to LLM, save, return
+                                 3. similarity > 0.93?  - yes -> cache (15ms) + X-Cache: HIT
+                                                        - no  -> call LLM, save, return
 ```
 
-- openai compatible api - just change base_url to http://localhost:8000/v1
-- semantic, not exact match. "what is fastapi" and "tell me about fastapi framework" hit the same cache
-- expired entries go away by TTL, if cache is full it cleans the oldest
+- **semantic** - `what is fastapi` and `tell me about fastapi framework` hit same cache
+- **openai api** - change `base_url` to `http://localhost:8000/v1` and it works
+- **TTL + LRU** - old entries expire, full cache cleans oldest
 
 ---
 
-## stack
+### stack
 
-- backend: FastAPI, async
-- vectors: postgres + pgvector (or just memory with numpy if you dont want db)
-- embeddings: sentence-transformers all-MiniLM-L6-v2, optional onnx, fallback to hash if model not found
-- proxy: httpx
-- other: docker, pytest, locust
+<p>
 
-nothing fancy, just glued together what works.
+- **backend** `FastAPI 0.141` `async` `httpx`
+- **vectors** `postgres 16 + pgvector` or `memory` with `numpy` (no db needed)
+- **embeddings** `sentence-transformers all-MiniLM-L6-v2` + `onnx` optional, fallback to hash
+- **infra** `docker + docker compose` `pytest` `locust`
+
+</p>
+
+nothing fancy, just glued what works.
 
 ---
 
-## quick start
+### quick start
+
+**1. one command**
 
 ```bash
 cp .env.example .env
-# put UPSTREAM_API_KEY if you want real requests, without it you get mock
+# put UPSTREAM_API_KEY if you want real LLM, without it you get mock
 
-docker compose up --build
-# or make up
+docker compose up --build   # with postgres + pgvector
+# or without db
+docker compose -f docker-compose.memory.yml up --build
 ```
 
-check:
+**2. check**
 
 ```bash
 curl http://localhost:8000/health
-# dashboard
-open http://localhost:8000/dashboard
-# swagger
-open http://localhost:8000/docs
+open http://localhost:8000/dashboard   # dashboard
+open http://localhost:8000/docs        # swagger
 
-# test proxy
+# try proxy
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "hello how are you"}]}' -i
-# first time X-Cache: MISS, second time HIT
+
+# first -> X-Cache: MISS
+# second -> X-Cache: HIT  X-Cache-Similarity: 0.99
 ```
 
-without docker:
+**3. without docker**
 
 ```bash
 pip install -r requirements.txt
@@ -87,9 +107,9 @@ uvicorn app.main:app --reload
 
 ---
 
-## config
+### config
 
-everything via .env:
+everything via `.env`
 
 ```ini
 UPSTREAM_API_URL=https://api.openai.com/v1/chat/completions
@@ -102,32 +122,27 @@ EMBEDDING_MODEL=all-MiniLM-L6-v2
 USE_ONNX=false
 ```
 
-want pgvector - just `docker compose up --build`, its already set up. want without postgres - `docker compose -f docker-compose.memory.yml up --build`
-
 ---
 
-## api
+### api
 
-### POST /v1/chat/completions
+| method | endpoint | what |
+|---|---|---|
+| `POST` | `/v1/chat/completions` | main proxy, openai compatible, `stream` goes past cache |
+| `POST` | `/v1/completions` | legacy |
+| `GET` | `/stats` | hit rate, latency, saved tokens |
+| `GET` | `/health` | health + cache size |
+| `GET` | `/dashboard` | html dashboard |
+| `POST` | `/cache/clear` | clear cache |
 
-normal openai request, supports stream (streams go past cache for now).
-
-```bash
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "what is fastapi?"}]}'
+headers to check:
+```
+X-Cache: HIT + X-Cache-Similarity: 0.97  # 15ms from cache
+X-Cache: MISS                            # went to upstream
+X-Cache: BYPASS                          # stream
 ```
 
-check headers:
-- X-Cache: HIT + X-Cache-Similarity: 0.97 - from cache, 15ms
-- X-Cache: MISS - went to upstream
-- X-Cache: BYPASS - stream
-
-also `_cache_hit` and `_cache_similarity` in body for debug.
-
-also `POST /v1/completions`, `GET /stats`, `GET /health`, `POST /cache/clear`, `GET /dashboard`.
-
-example `/stats`:
+also `GET /stats` example:
 
 ```json
 {
@@ -142,32 +157,20 @@ example `/stats`:
 
 ---
 
-## dashboard
-
-http://localhost:8000/dashboard - hits, latency, how many tokens and dollars you saved. auto refresh.
-
-![Dashboard](docs/dashboard.png)
-
-real screenshot from browser after `docker compose up`. svg version also in `docs/dashboard.svg` if you need vector.
-live looks the same but with your numbers.
-
----
-
-## benchmarks
-
-run `make up` then:
+### benchmarks
 
 ```bash
+# after make up
 locust -f locustfile.py --host http://localhost:8000 --headless -u 50 -r 10 --run-time 30s
-# or simpler
 python scripts/benchmark.py --requests 200 --concurrency 10
 ```
 
 on my laptop with mock upstream:
 
 ```
-avg          HIT 12.4ms   vs MISS 1120ms   x90 faster
-p95          HIT 18ms     vs MISS 1350ms
+avg   HIT 12.4ms  vs MISS 1120ms  x90 faster
+p95   HIT 18ms    vs MISS 1350ms
+p99   HIT 22ms    vs MISS 1480ms
 ```
 
 ```
@@ -175,72 +178,68 @@ HIT  : █ 12.4ms
 MISS : ████████████████████████████████████████ 1120ms
 ```
 
-on real openai difference is even bigger because network + generation.
-
-script saves benchmark_result.json, you can put your own graph in readme.
+real openai is even bigger because network + generation. `scripts/benchmark.py` saves `benchmark_result.json`.
 
 ---
 
-## tests
+### tests
 
 ```bash
-pytest -v
-# 17 tests, no external deps
-
+pytest -v              # 17 tests, no deps
 make test
 ```
 
-ci uses `FORCE_DUMMY_EMBEDDING=1` so it doesnt download model. want real model: `FORCE_DUMMY_EMBEDDING=0 pytest -v`
+ci uses `FORCE_DUMMY_EMBEDDING=1` so it does not download model. with real model: `FORCE_DUMMY_EMBEDDING=0 pytest -v`
 
 ---
 
-## structure
+### structure
 
 ```
-app/main.py              - fastapi, endpoints
-app/config.py            - settings from .env
-app/cache/memory.py      - cache on numpy
-app/cache/pgvector.py    - postgres + pgvector, falls back to memory if no db
-app/embeddings/local.py  - loads minilm, if fails - hash
-app/proxy/upstream.py    - calls llm, without key returns mock
-tests/                   - pytest
-scripts/benchmark.py     - bench
+app/main.py              # fastapi, endpoints
+app/config.py            # settings from .env
+app/cache/memory.py      # cache on numpy
+app/cache/pgvector.py    # pgvector, falls back to memory
+app/embeddings/local.py  # loads minilm, fallback to hash
+app/proxy/upstream.py    # calls llm, mock without key
+tests/                   # 17 tests
+scripts/benchmark.py     # bench
 ```
 
 tried to keep it simple, no over engineering.
 
 ---
 
-## makefile
+### make
 
 ```
-make up        - start all
-make down      - stop
-make logs      - logs
-make dev       - local without docker
-make test      - tests
-make benchmark - run bench
-make locust    - locust ui
+make up          start all
+make down        stop
+make logs        logs
+make dev         local without docker
+make test        tests
+make benchmark   bench
+make locust      locust ui
 ```
 
 ---
 
-## whats next
+### whats next
 
 - [x] pgvector works
 - [ ] redis version if needed
-- [ ] stream cache (now streams bypass)
+- [ ] stream cache
 - [ ] prometheus metrics
 - [ ] auth
 
-if you want to help - open an issue.
+open an issue if you want to help.
 
 ---
 
-## license
+### license
 
-MIT, do what you want.
+MIT - do what you want.
 
-if you like it - give it a star, makes me happy :)
+if you like it give it a star :)
 
-built with coffee and hate for wasted tokens.
+built with coffee and hate for wasted tokens. feedback welcome - Sanya
