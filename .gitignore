@@ -55,10 +55,7 @@ htmlcov/
 *~
 .DS_Store
 Thumbs.db
-
-# swarm / opencode - служебные папки фреймворка
 .swarm/
-.opencode/
 
 # docker
 .docker/

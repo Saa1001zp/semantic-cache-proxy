@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # чтобы логи сразу летели в stdout
 ENV PYTHONDONTWRITEBYTECODE=1
