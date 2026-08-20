@@ -21,11 +21,6 @@ two pains with LLM in prod:
 
 proxy fixes both: if `similarity > 0.93` - return cache in milliseconds and count how much money you saved.
 
-good for:
-- showing you can do infra, not just call openai
-- nice portfolio project with graphs
-- saving tokens in your own project
-
 ---
 
 ## how it works
