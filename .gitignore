@@ -1,0 +1,64 @@
+# python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.venv*/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# env & secrets - никогда не пушим ключи
+.env
+.env.local
+.env.*.local
+
+# models / веса - тяжелые, качаются отдельно
+models/
+*.onnx
+*.bin
+*.safetensors
+*.pt
+*.pth
+onnx/
+
+# cache / db
+data/
+pgdata/
+dump.rdb
+
+# benchmarks
+benchmark_result.json
+benchmark_results/
+locust-report.html
+locust-*.html
+
+# logs & coverage
+*.log
+*.sqlite
+*.db
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ide & os
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# swarm / opencode - служебные папки фреймворка
+.swarm/
+.opencode/
+
+# docker
+.docker/

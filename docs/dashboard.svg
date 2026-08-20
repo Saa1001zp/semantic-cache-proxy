@@ -1,0 +1,86 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" rx="16" fill="#0a0a0b"/>
+  <text x="32" y="48" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="#e8e8e8">⚡ Semantic Cache Proxy</text>
+  <text x="32" y="72" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#9a9a9e">семантический кэш для LLM - режет latency с 1.2с до ~15мс и экономит токены. Обновляется каждую секунду.</text>
+
+  <!-- cards -->
+  <g font-family="Inter, system-ui, sans-serif">
+    <!-- hit rate -->
+    <rect x="32" y="100" width="268" height="130" rx="16" fill="#141416" stroke="#232326"/>
+    <text x="52" y="125" font-size="11" fill="#9a9a9e" letter-spacing="1">HIT RATE</text>
+    <text x="52" y="160" font-size="28" font-weight="700" fill="#e8e8e8">62.4%</text>
+    <text x="52" y="180" font-size="11" fill="#6b6b6f">780 хитов из 1250 запросов</text>
+    <rect x="52" y="195" width="228" height="8" rx="4" fill="#232326"/>
+    <rect x="52" y="195" width="142" height="8" rx="4" fill="url(#grad)"/>
+
+    <!-- latency -->
+    <rect x="316" y="100" width="268" height="130" rx="16" fill="#141416" stroke="#232326"/>
+    <text x="336" y="125" font-size="11" fill="#9a9a9e" letter-spacing="1">LATENCY CACHED</text>
+    <text x="336" y="160" font-size="28" font-weight="700" fill="#e8e8e8">14.2 ms</text>
+    <text x="336" y="180" font-size="11" fill="#6b6b6f">vs 1240 ms без кэша - ускорение ×87</text>
+    <rect x="336" y="195" width="228" height="8" rx="4" fill="#232326"/>
+    <rect x="336" y="195" width="20" height="8" rx="4" fill="#06b6d4"/>
+
+    <!-- tokens -->
+    <rect x="600" y="100" width="268" height="130" rx="16" fill="#141416" stroke="#232326"/>
+    <text x="620" y="125" font-size="11" fill="#9a9a9e" letter-spacing="1">СЭКОНОМЛЕНО ТОКЕНОВ</text>
+    <text x="620" y="160" font-size="28" font-weight="700" fill="#e8e8e8">312,000</text>
+    <text x="620" y="180" font-size="11" fill="#6b6b6f">187k in + 125k out</text>
+    <text x="620" y="205" font-size="11" fill="#34d399">▲ +2.4k за последнюю минуту</text>
+
+    <!-- money -->
+    <rect x="884" y="100" width="284" height="130" rx="16" fill="#141416" stroke="#232326"/>
+    <text x="904" y="125" font-size="11" fill="#9a9a9e" letter-spacing="1">СЭКОНОМЛЕНО $</text>
+    <text x="904" y="160" font-size="28" font-weight="700" fill="#e8e8e8">$4.68</text>
+    <text x="904" y="180" font-size="11" fill="#6b6b6f">по тарифу $0.005/1k in, $0.015/1k out</text>
+    <rect x="904" y="195" width="244" height="8" rx="4" fill="#232326"/>
+    <rect x="904" y="195" width="140" height="8" rx="4" fill="#7c3aed"/>
+  </g>
+
+  <!-- bottom row -->
+  <rect x="32" y="250" width="560" height="260" rx="16" fill="#141416" stroke="#232326"/>
+  <text x="52" y="278" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#9a9a9e">КЭШ</text>
+  <text x="52" y="300" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#e8e8e8">1,247 записей  •  threshold 0.93  •  ttl 7д  •  pgvector</text>
+  <line x1="52" y1="318" x2="572" y2="318" stroke="#232326"/>
+  <g font-family="Inter, system-ui, sans-serif" font-size="12">
+    <text x="52" y="342" fill="#9a9a9e">Total requests</text><text x="480" y="342" fill="#e8e8e8">1,250</text>
+    <text x="52" y="364" fill="#9a9a9e">Hits / Misses</text>
+    <rect x="360" y="352" width="70" height="18" rx="9" fill="#0f2a1a" stroke="#14532d"/><text x="372" y="365" font-size="11" font-weight="700" fill="#34d399">780 HIT</text>
+    <rect x="440" y="352" width="75" height="18" rx="9" fill="#2a1a1a" stroke="#7f1d1d"/><text x="452" y="365" font-size="11" font-weight="700" fill="#f87171">470 MISS</text>
+    <text x="52" y="390" fill="#9a9a9e">Avg cached latency</text><text x="480" y="390" fill="#34d399">14.2 ms</text>
+    <text x="52" y="412" fill="#9a9a9e">Avg miss latency</text><text x="480" y="412" fill="#f87171">1,240 ms</text>
+    <text x="52" y="434" fill="#9a9a9e">Модель</text><text x="480" y="434" fill="#e8e8e8">all-MiniLM-L6-v2</text>
+    <text x="52" y="456" fill="#9a9a9e">Backend</text><text x="480" y="456" fill="#8b9bff">pgvector (HNSW)</text>
+  </g>
+
+  <rect x="608" y="250" width="560" height="260" rx="16" fill="#141416" stroke="#232326"/>
+  <text x="628" y="278" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#9a9a9e">КАК ЭТО РАБОТАЕТ</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="12" fill="#b8b8bb">
+    <text x="628" y="302">1. Клиент шлет  <tspan fill="#e8e8e8" font-family="monospace">POST /v1/chat/completions</tspan>  как в OpenAI</text>
+    <text x="628" y="322">2. Текст → эмбеддинг  <tspan fill="#06b6d4">all-MiniLM-L6-v2</tspan>  ~15мс на CPU (ONNX)</text>
+    <text x="628" y="342">3. Косинусный поиск в pgvector  <tspan fill="#e8e8e8" font-family="monospace">1 - (emb &lt;=&gt; $1)</tspan></text>
+    <text x="628" y="362">4. Если  <tspan fill="#34d399" font-weight="700">similarity &gt; 0.93</tspan>  - отдаём кэш за ~15мс</text>
+    <text x="628" y="382">5. Иначе - прокидываем в upstream, сохраняем</text>
+  </g>
+  <rect x="628" y="400" width="520" height="36" rx="8" fill="#1f1f22"/>
+  <text x="638" y="422" font-family="monospace" font-size="11" fill="#9a9a9e">curl -i localhost:8000/v1/chat/completions  -H "X-Cache: HIT"  14ms</text>
+
+  <rect x="628" y="450" width="520" height="36" rx="8" fill="#0f2a1a" stroke="#14532d"/>
+  <text x="638" y="472" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#34d399">✓  график locust: HIT 12ms vs MISS 1120ms - ускорение ×90</text>
+
+  <!-- latency bar chart -->
+  <rect x="32" y="530" width="1136" height="110" rx="16" fill="#141416" stroke="#232326"/>
+  <text x="52" y="555" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#9a9a9e" letter-spacing="1">LATENCY  (locust, 50 users, 30s)</text>
+  <text x="52" y="585" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#34d399">HIT  12.4 ms</text>
+  <rect x="140" y="575" width="40" height="18" rx="4" fill="#34d399"/>
+  <text x="52" y="608" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#f87171">MISS 1,120 ms</text>
+  <rect x="140" y="598" width="980" height="18" rx="4" fill="#f87171"/>
+  <text x="1020" y="585" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#9a9a9e">×90 быстрее</text>
+
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <text x="32" y="660" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#6b6b6f">semantic-cache-proxy v0.1.0 • docker compose up --build • open http://localhost:8000/dashboard • header X-Cache: HIT/MISS</text>
+</svg>

@@ -1,0 +1,19 @@
+# лайтовая версия без postgres - для локалки без докер-постгреса
+# запуск: docker compose -f docker-compose.memory.yml up --build
+services:
+  proxy:
+    build: .
+    container_name: semantic-cache-proxy
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      VECTOR_BACKEND: memory
+      LOG_LEVEL: info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

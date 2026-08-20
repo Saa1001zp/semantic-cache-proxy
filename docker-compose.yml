@@ -1,0 +1,55 @@
+services:
+  proxy:
+    build: .
+    container_name: semantic-cache-proxy
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      VECTOR_BACKEND: pgvector
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/semantic_cache
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: info
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: semantic-cache-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: semantic_cache
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- опционально: redis (для VECTOR_BACKEND=redis) ---
+  # раскомментируй и поменяй VECTOR_BACKEND=redis в proxy.environment
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: semantic-cache-redis
+  #   ports:
+  #     - "6379:6379"
+  #   command: redis-server --save "" --appendonly no
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     retries: 5
+
+volumes:
+  pgdata:
